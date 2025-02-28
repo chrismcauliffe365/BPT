@@ -38,6 +38,7 @@ import {
   OutlinedInput,
   List,
   ListItem,
+  AlertTitle,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -1046,7 +1047,13 @@ export function ProcessModelsPage() {
       }
     } catch (error) {
       console.error('Error saving diagram:', error);
-      showSnackbar('Failed to save process model', 'error');
+      showSnackbar('Failed to save process model to backend, but you can continue editing locally', 'error');
+      
+      // Update the current diagram locally even if the backend save fails
+      setCurrentDiagram({
+        ...updatedDiagram,
+        updated_at: new Date().toISOString()
+      });
     }
   };
 
@@ -1679,6 +1686,54 @@ export function ProcessModelsPage() {
       overflow: 'hidden',
       p: 3,
     }}>
+      {/* Backend Connection Error Banner */}
+      {(error || (loading === false && filteredDiagrams.length === 0)) && (
+        <Alert 
+          severity="warning" 
+          sx={{ mb: 3 }}
+          action={
+            <Button 
+              color="inherit" 
+              size="small"
+              onClick={() => {
+                // Create an empty diagram and open editor
+                const now = new Date().toISOString();
+                const emptyDiagram: BPMNDiagram = {
+                  id: Math.floor(Math.random() * 10000), // Temp ID
+                  name: "New BPMN Diagram",
+                  description: "Created without backend connection",
+                  diagram_data: {
+                    nodes: [],
+                    edges: [],
+                    type: 'bpmn',
+                    version: '2.0',
+                    properties: {}
+                  },
+                  xml_content: '<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"></bpmn:definitions>',
+                  status: 'active',
+                  created_at: now,
+                  updated_at: now,
+                  metadata: {
+                    category: 'core',
+                    department: 'General',
+                    priority: 'medium',
+                    complexity: 'medium'
+                  }
+                };
+                setCurrentDiagram(emptyDiagram);
+                setIsEditorOpen(true);
+              }}
+            >
+              OPEN EDITOR
+            </Button>
+          }
+        >
+          <AlertTitle>Backend Connection Issue</AlertTitle>
+          Unable to connect to the backend server. You can still use the BPMN Editor in offline mode by clicking the "Open BPMN Editor" button.
+          Note that your changes won't be automatically saved to the server until the connection is restored.
+        </Alert>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ mb: 2 }}>Process Models</Typography>
@@ -2043,6 +2098,41 @@ export function ProcessModelsPage() {
             }
             label="Live Preview"
           />
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<EditIcon />}
+            onClick={() => {
+              // Create an empty diagram and open editor
+              const now = new Date().toISOString();
+              const emptyDiagram: BPMNDiagram = {
+                id: Math.floor(Math.random() * 10000), // Temp ID
+                name: "New BPMN Diagram",
+                description: "Created without backend connection",
+                diagram_data: {
+                  nodes: [],
+                  edges: [],
+                  type: 'bpmn',
+                  version: '2.0',
+                  properties: {}
+                },
+                xml_content: '<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"></bpmn:definitions>',
+                status: 'active',
+                created_at: now,
+                updated_at: now,
+                metadata: {
+                  category: 'core',
+                  department: 'General',
+                  priority: 'medium',
+                  complexity: 'medium'
+                }
+              };
+              setCurrentDiagram(emptyDiagram);
+              setIsEditorOpen(true);
+            }}
+          >
+            Open BPMN Editor
+          </Button>
           <Button
             variant="outlined"
             startIcon={<AutoAwesomeIcon />}
