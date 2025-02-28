@@ -4,7 +4,7 @@ import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import { Box, CircularProgress, Snackbar, Alert, Typography, List, ListItem, ListItemText, ListItemIcon, Tabs, Tab, IconButton, Button, Menu, MenuItem, Collapse, Divider, Tooltip, Paper } from '@mui/material';
-import { AccountTree, Close as CloseIcon, Add as AddIcon, Print as PrintIcon, Save as SaveIcon, Upload as UploadIcon, Publish as PublishIcon, Psychology as PsychologyIcon, PlayArrow as PlayArrowIcon, Image as ImageIcon, PictureAsPdf as PdfIcon, Code as CodeIcon, ZoomIn as ZoomInIcon, ZoomOut as ZoomOutIcon, Fullscreen as FullscreenIcon, FullscreenExit as FullscreenExitIcon, FitScreen as FitScreenIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
+import { AccountTree, Close as CloseIcon, Add as AddIcon, Print as PrintIcon, Save as SaveIcon, Upload as UploadIcon, Publish as PublishIcon, Psychology as PsychologyIcon, PlayArrow as PlayArrowIcon, Image as ImageIcon, PictureAsPdf as PdfIcon, Code as CodeIcon, ZoomIn as ZoomInIcon, ZoomOut as ZoomOutIcon, Fullscreen as FullscreenIcon, FullscreenExit as FullscreenExitIcon, FitScreen as FitScreenIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Undo as UndoIcon, Redo as RedoIcon } from '@mui/icons-material';
 import { ResizableBox } from 'react-resizable';
 import type { ResizeCallbackData } from 'react-resizable';
 import 'react-resizable/css/styles.css';
@@ -1465,6 +1465,53 @@ export function BPMNEditor({ diagramId, diagramName, onSave, onElementSelect, on
     </Box>
   );
 
+  // Add undo and redo handlers
+  const handleUndo = () => {
+    if (!modeler) return;
+    try {
+      const commandStack = modeler.get('commandStack');
+      if (commandStack.canUndo()) {
+        commandStack.undo();
+        logInteraction({
+          elementType: 'UndoButton',
+          action: 'undo',
+          success: true
+        });
+      }
+    } catch (error) {
+      console.error('Error performing undo:', error);
+      logInteraction({
+        elementType: 'UndoButton',
+        action: 'undo',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
+
+  const handleRedo = () => {
+    if (!modeler) return;
+    try {
+      const commandStack = modeler.get('commandStack');
+      if (commandStack.canRedo()) {
+        commandStack.redo();
+        logInteraction({
+          elementType: 'RedoButton',
+          action: 'redo',
+          success: true
+        });
+      }
+    } catch (error) {
+      console.error('Error performing redo:', error);
+      logInteraction({
+        elementType: 'RedoButton',
+        action: 'redo',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
+
   return (
     <Box 
       className="bpmn-editor-container"
@@ -1477,35 +1524,52 @@ export function BPMNEditor({ diagramId, diagramName, onSave, onElementSelect, on
       }}
     >
       {/* Left Sidebar */}
-      <ResizableBox
-        width={leftSidebarWidth}
-        height={window.innerHeight}
-        minConstraints={[200, window.innerHeight]}
-        maxConstraints={[500, window.innerHeight]}
-        axis="x"
-        handle={<div className="custom-handle" style={{ 
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: '5px',
-          cursor: 'col-resize',
-          background: 'rgba(0,0,0,0.1)',
-        }}/>}
-        onResize={(e, data) => {
-          setLeftSidebarWidth(data.size.width);
+      <Box
+        className={`sidebar-resizable ${leftSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+        sx={{ 
+          width: leftSidebarCollapsed ? 50 : leftSidebarWidth,
+          height: '100%',
+          overflow: 'hidden',
+          transition: 'width 0.3s ease',
         }}
       >
-        <Box className="sidebar-content" sx={{ height: '100%', overflow: 'auto' }}>
-          {renderProcessLandscape()}
-        </Box>
+        {!leftSidebarCollapsed ? (
+          <ResizableBox
+            width={leftSidebarWidth}
+            height={window.innerHeight}
+            minConstraints={[200, window.innerHeight]}
+            maxConstraints={[500, window.innerHeight]}
+            axis="x"
+            handle={<div className="custom-handle" style={{ 
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: '5px',
+              cursor: 'col-resize',
+              background: 'rgba(0,0,0,0.1)',
+              zIndex: 10,
+            }}/>}
+            onResize={(e, data: ResizeCallbackData) => {
+              setLeftSidebarWidth(data.size.width);
+            }}
+          >
+            <Box className="sidebar-content" sx={{ height: '100%', overflow: 'auto' }}>
+              {renderProcessLandscape()}
+            </Box>
+          </ResizableBox>
+        ) : (
+          <Box className="sidebar-content" sx={{ height: '100%', overflow: 'auto', width: 50 }}>
+            {renderProcessLandscape()}
+          </Box>
+        )}
         <div 
           className="sidebar-toggle"
           onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
         >
           {leftSidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </div>
-      </ResizableBox>
+      </Box>
 
       {/* Main Content */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -1533,6 +1597,32 @@ export function BPMNEditor({ diagramId, diagramName, onSave, onElementSelect, on
               >
                 File
               </Button>
+
+              <Divider orientation="vertical" flexItem />
+
+              {/* Add Undo/Redo buttons */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Tooltip title="Undo">
+                  <IconButton size="small" onClick={handleUndo}>
+                    <UndoIcon />
+                  </IconButton>
+                </Tooltip>
+                
+                <Tooltip title="Redo">
+                  <IconButton size="small" onClick={handleRedo}>
+                    <RedoIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
+              <Divider orientation="vertical" flexItem />
+
+              {/* Add Save button */}
+              <Tooltip title="Save">
+                <IconButton size="small" onClick={handleSave} color="primary">
+                  <SaveIcon />
+                </IconButton>
+              </Tooltip>
 
               <Divider orientation="vertical" flexItem />
 
@@ -1655,9 +1745,6 @@ export function BPMNEditor({ diagramId, diagramName, onSave, onElementSelect, on
             <PdfIcon sx={{ mr: 1 }} /> Export as PDF
           </MenuItem>
           <Divider />
-          <MenuItem onClick={() => { handleSave(); handleFileMenuClose(); }}>
-            <SaveIcon sx={{ mr: 1 }} /> Save
-          </MenuItem>
           <MenuItem onClick={() => { handlePrint(); handleFileMenuClose(); }}>
             <PrintIcon sx={{ mr: 1 }} /> Print
           </MenuItem>
@@ -1692,115 +1779,135 @@ export function BPMNEditor({ diagramId, diagramName, onSave, onElementSelect, on
       </Box>
 
       {/* Right Sidebar */}
-      <ResizableBox
-        width={rightSidebarWidth}
-        height={window.innerHeight}
-        minConstraints={[200, window.innerHeight]}
-        maxConstraints={[500, window.innerHeight]}
-        axis="x"
-        handle={<div className="custom-handle" style={{ 
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: '5px',
-          cursor: 'col-resize',
-          background: 'rgba(0,0,0,0.1)',
-        }}/>}
-        onResize={(e, data) => {
-          setRightSidebarWidth(data.size.width);
+      <Box
+        className={`sidebar-resizable right ${rightSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+        sx={{ 
+          width: rightSidebarCollapsed ? 50 : rightSidebarWidth,
+          height: '100%',
+          overflow: 'hidden',
+          transition: 'width 0.3s ease',
         }}
       >
-        <Box className="sidebar-content" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          {/* Tabs */}
-          <Tabs
-            value={rightSidebarTab}
-            onChange={(_, newValue) => setRightSidebarTab(newValue)}
-            sx={{ 
-              borderBottom: 1, 
-              borderColor: 'divider',
-              minHeight: 48,
-              bgcolor: 'background.paper',
-              '& .MuiTab-root': {
-                minHeight: 48,
-                textTransform: 'none',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: 'text.secondary',
-                '&.Mui-selected': {
-                  color: 'primary.main',
-                  fontWeight: 600,
-                },
-              },
-              '& .MuiTabs-indicator': {
-                height: 3,
-              },
+        {!rightSidebarCollapsed ? (
+          <ResizableBox
+            width={rightSidebarWidth}
+            height={window.innerHeight}
+            minConstraints={[200, window.innerHeight]}
+            maxConstraints={[500, window.innerHeight]}
+            axis="x"
+            handle={<div className="custom-handle" style={{ 
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '5px',
+              cursor: 'col-resize',
+              background: 'rgba(0,0,0,0.1)',
+              zIndex: 10,
+            }}/>}
+            onResize={(e, data: ResizeCallbackData) => {
+              setRightSidebarWidth(data.size.width);
             }}
           >
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AccountTree fontSize="small" />
-                  Properties
-                </Box>
-              }
-              value="metadata"
-            />
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PsychologyIcon fontSize="small" />
-                  AI Assistant
-                </Box>
-              }
-              value="ai"
-            />
-          </Tabs>
+            <Box className="sidebar-content" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {/* Tabs */}
+              <Tabs
+                value={rightSidebarTab}
+                onChange={(_, newValue) => setRightSidebarTab(newValue)}
+                sx={{ 
+                  borderBottom: 1, 
+                  borderColor: 'divider',
+                  minHeight: 48,
+                  bgcolor: 'background.paper',
+                  '& .MuiTab-root': {
+                    minHeight: 48,
+                    textTransform: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    '&.Mui-selected': {
+                      color: 'primary.main',
+                      fontWeight: 600,
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    height: 3,
+                  },
+                }}
+              >
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AccountTree fontSize="small" />
+                      Properties
+                    </Box>
+                  }
+                  value="metadata"
+                />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PsychologyIcon fontSize="small" />
+                      AI Assistant
+                    </Box>
+                  }
+                  value="ai"
+                />
+              </Tabs>
 
-          {/* Tab Panels */}
-          <Box sx={{ 
-            flex: 1, 
-            overflow: 'auto', 
-            display: 'flex', 
-            flexDirection: 'column',
-            bgcolor: 'background.paper',
-          }}>
-            {rightSidebarTab === 'metadata' && (
+              {/* Tab Panels */}
               <Box sx={{ 
                 flex: 1, 
                 overflow: 'auto', 
-                p: 2,
-                borderLeft: 1,
-                borderColor: 'divider',
-              }}>
-                {renderMetadataPanel()}
-              </Box>
-            )}
-            {rightSidebarTab === 'ai' && (
-              <Box sx={{ 
-                flex: 1, 
-                overflow: 'hidden',
-                display: 'flex',
+                display: 'flex', 
                 flexDirection: 'column',
                 bgcolor: 'background.paper',
               }}>
-                <SmartProcess
-                  currentXml={currentXml}
-                  selectedElementId={selectedElement?.id || null}
-                  onElementAdd={handleElementAdd}
-                  onUpdateXml={handleUpdateXml}
-                />
+                {rightSidebarTab === 'metadata' && (
+                  <Box sx={{ 
+                    flex: 1, 
+                    overflow: 'auto', 
+                    p: 2,
+                    borderLeft: 1,
+                    borderColor: 'divider',
+                  }}>
+                    {renderMetadataPanel()}
+                  </Box>
+                )}
+                {rightSidebarTab === 'ai' && (
+                  <Box sx={{ 
+                    flex: 1, 
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: 'background.paper',
+                  }}>
+                    <SmartProcess
+                      currentXml={currentXml}
+                      selectedElementId={selectedElement?.id || null}
+                      onElementAdd={handleElementAdd}
+                      onUpdateXml={handleUpdateXml}
+                    />
+                  </Box>
+                )}
               </Box>
-            )}
+            </Box>
+          </ResizableBox>
+        ) : (
+          <Box className="sidebar-content" sx={{ height: '100%', width: 50 }}>
+            {/* Collapsed sidebar content */}
           </Box>
-        </Box>
+        )}
         <div 
           className="sidebar-toggle"
           onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+          style={{
+            left: rightSidebarCollapsed ? -20 : -20
+          }}
         >
           {rightSidebarCollapsed ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </div>
-      </ResizableBox>
+      </Box>
 
       {/* Notification Snackbar */}
       {(notification || simulationResults) && (
