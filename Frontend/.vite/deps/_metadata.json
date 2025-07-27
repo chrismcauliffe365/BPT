@@ -1,0 +1,112 @@
+{
+  "hash": "3da209f1",
+  "configHash": "a0d4a0d3",
+  "lockfileHash": "e3b0c442",
+  "browserHash": "6a974b6d",
+  "optimized": {
+    "@emotion/react": {
+      "src": "../../node_modules/@emotion/react/dist/emotion-react.browser.development.esm.js",
+      "file": "@emotion_react.js",
+      "fileHash": "75548026",
+      "needsInterop": false
+    },
+    "@emotion/styled": {
+      "src": "../../node_modules/@emotion/styled/dist/emotion-styled.browser.development.esm.js",
+      "file": "@emotion_styled.js",
+      "fileHash": "f3de894b",
+      "needsInterop": false
+    },
+    "@mui/material": {
+      "src": "../../node_modules/@mui/material/index.js",
+      "file": "@mui_material.js",
+      "fileHash": "9db97361",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "355a4d0e",
+      "needsInterop": true
+    },
+    "react-dom": {
+      "src": "../../node_modules/react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "de93a110",
+      "needsInterop": true
+    },
+    "@emotion/react/jsx-dev-runtime": {
+      "src": "../../node_modules/@emotion/react/jsx-dev-runtime/dist/emotion-react-jsx-dev-runtime.browser.development.esm.js",
+      "file": "@emotion_react_jsx-dev-runtime.js",
+      "fileHash": "06d3392b",
+      "needsInterop": false
+    },
+    "@emotion/react/jsx-runtime": {
+      "src": "../../node_modules/@emotion/react/jsx-runtime/dist/emotion-react-jsx-runtime.browser.development.esm.js",
+      "file": "@emotion_react_jsx-runtime.js",
+      "fileHash": "ab4f64bd",
+      "needsInterop": false
+    },
+    "bpmn-js/dist/bpmn-modeler.production.min.js": {
+      "src": "../../node_modules/bpmn-js/dist/bpmn-modeler.production.min.js",
+      "file": "bpmn-js_dist_bpmn-modeler__production__min__js.js",
+      "fileHash": "5b32e818",
+      "needsInterop": true
+    },
+    "@mui/icons-material": {
+      "src": "../../node_modules/@mui/icons-material/esm/index.js",
+      "file": "@mui_icons-material.js",
+      "fileHash": "4c3b1d03",
+      "needsInterop": false
+    },
+    "react-resizable": {
+      "src": "../../node_modules/react-resizable/index.js",
+      "file": "react-resizable.js",
+      "fileHash": "1382f994",
+      "needsInterop": true
+    },
+    "diagram-js-minimap": {
+      "src": "../../node_modules/diagram-js-minimap/dist/index.esm.js",
+      "file": "diagram-js-minimap.js",
+      "fileHash": "f60f1f6c",
+      "needsInterop": false
+    },
+    "diagram-js-grid": {
+      "src": "../../node_modules/diagram-js-grid/dist/index.esm.js",
+      "file": "diagram-js-grid.js",
+      "fileHash": "9aeb8b5d",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-3I43AQ5D": {
+      "file": "chunk-3I43AQ5D.js"
+    },
+    "chunk-DUI6JTDH": {
+      "file": "chunk-DUI6JTDH.js"
+    },
+    "chunk-FWNK54VO": {
+      "file": "chunk-FWNK54VO.js"
+    },
+    "chunk-Y63LYS5C": {
+      "file": "chunk-Y63LYS5C.js"
+    },
+    "chunk-B6RA5P6P": {
+      "file": "chunk-B6RA5P6P.js"
+    },
+    "chunk-ZZLBGYQN": {
+      "file": "chunk-ZZLBGYQN.js"
+    },
+    "chunk-32NEGIXE": {
+      "file": "chunk-32NEGIXE.js"
+    },
+    "chunk-7K3IMZ4H": {
+      "file": "chunk-7K3IMZ4H.js"
+    },
+    "chunk-65KY755N": {
+      "file": "chunk-65KY755N.js"
+    },
+    "chunk-V4OQ3NZ2": {
+      "file": "chunk-V4OQ3NZ2.js"
+    }
+  }
+}
